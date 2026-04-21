@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renewal Prospect Tracker</title>
+  <script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="bzis9yjpskm9u7l"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #222;
+    }
+    
+    .form-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    button {
+      padding: 10px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    button:hover {
+      background: #1d4ed8;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .table-wrapper {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    th {
+      text-align: left;
+      padding: 14px;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 600;
+      background: #f9fafb;
+      color: #6b7280;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    tr:hover {
+      background: #f9fafb;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .urgent {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    
+    .soon {
+      color: #ea580c;
+      font-weight: 600;
+    }
+    
+    .plenty {
+      color: #16a34a;
+      font-weight: 600;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .status-prospect {
+      background: #dbeafe;
+      color: #0284c7;
+    }
+    
+    .status-client {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    
+    .status-nurture {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    
+    .btn-delete {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #dc2626;
+      background: transparent;
+      border: 1px solid #fecaca;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+    
+    .btn-delete:hover {
+      background: #fee2e2;
+      border-color: #dc2626;
+    }
+
+    .btn-view {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #0284c7;
+      background: transparent;
+      border: 1px solid #bfdbfe;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .btn-view:hover {
+      background: #dbeafe;
+      border-color: #0284c7;
+    }
+    
+    .empty {
+      color: #9ca3af;
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+    
+    .org-name {
+      font-weight: 600;
+      color: #222;
+    }
+
+    .actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-dropbox {
+      padding: 10px 16px;
+      background: #0061ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .btn-dropbox:hover {
+      background: #0050cc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Renewal Prospect Tracker</h1>
+    
+    <div class="form-section">
+      <input type="text" id="orgName" placeholder="Organization name" />
+      <input type="text" id="contact" placeholder="Contact name (optional)" />
+      <input type="date" id="renewalDate" />
+      <input type="url" id="crmLink" placeholder="CRM link (optional)" />
+      <input type="url" id="policyLink" placeholder="Policy PDF link (optional)" />
+      <button type="button" class="btn-dropbox" onclick="chooseFromDropbox()">📁 Dropbox</button>
+      <input type="number" id="premium" placeholder="Annual premium" />
+      <select id="status">
+        <option value="Prospect">Prospect</option>
+        <option value="Client">Client</option>
+        <option value="Nurture">Nurture</option>
+      </select>
+      <button id="submitBtn" onclick="addProspect()">Add</button>
+      <button id="cancelBtn" onclick="cancelEdit()" style="display: none; background: #6b7280;">Cancel</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="prospectTable">
+        <thead>
+          <tr>
+            <th>Organization</th>
+            <th>Contact</th>
+            <th>Renewal Date</th>
+            <th>Days Until</th>
+            <th>Premium</th>
+            <th>Policy</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty">No prospects yet. Add one to get started.</div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'renewal_prospects';
+    let editingIndex = null;
+    
+    function getProspects() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+    
+    function saveProspects(prospects) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(prospects));
+    }
+    
+    function daysUntilRenewal(dateStr) {
+      const renewalDate = new Date(dateStr);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      renewalDate.setHours(0, 0, 0, 0);
+      const diff = renewalDate - today;
+      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+    
+    function getUrgencyClass(days) {
+      if (days <= 30) return 'urgent';
+      if (days <= 60) return 'soon';
+      return 'plenty';
+    }
+    
+    function formatDate(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    function renderTable() {
+      const prospects = getProspects();
+      const tbody = document.getElementById('tableBody');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (prospects.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      
+      prospects.sort((a, b) => new Date(a.renewalDate) - new Date(b.renewalDate));
+      
+      tbody.innerHTML = prospects.map((p, idx) => {
+        const days = daysUntilRenewal(p.renewalDate);
+        const urgencyClass = getUrgencyClass(days);
+        const daysText = days < 0 ? `${Math.abs(days)}d past` : `${days}d`;
+        
+        const policyCell = p.policyLink 
+          ? `<button class="btn-view" onclick="openPolicyLink('${p.policyLink}')">View</button>`
+          : '-';
+
+        const premiumText = p.premium ? `$${parseInt(p.premium).toLocaleString()}` : '-';
+        
+        const orgNameCell = p.crmLink
+          ? `<a href="${p.crmLink}" target="_blank" style="color: #2563eb; text-decoration: underline; cursor: pointer;">${p.orgName}</a>`
+          : `<span class="org-name">${p.orgName}</span>`;
+        
+        return `
+          <tr>
+            <td>${orgNameCell}</td>
+            <td>${p.contact || '-'}</td>
+            <td>${formatDate(p.renewalDate)}</td>
+            <td><span class="${urgencyClass}">${daysText}</span></td>
+            <td>${premiumText}</td>
+            <td>${policyCell}</td>
+            <td><span class="status-badge status-${p.status.toLowerCase()}">${p.status}</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn-delete" onclick="editProspect(${idx})">Edit</button>
+                <button class="btn-delete" onclick="deleteProspect(${idx})">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function addProspect() {
+      const orgName = document.getElementById('orgName').value.trim();
+      const contact = document.getElementById('contact').value.trim();
+      const renewalDate = document.getElementById('renewalDate').value;
+      const crmLink = document.getElementById('crmLink').value.trim();
+      const policyLink = document.getElementById('policyLink').value.trim();
+      const premium = document.getElementById('premium').value.trim();
+      const status = document.getElementById('status').value;
+      
+      if (!orgName || !renewalDate) {
+        alert('Organization name and renewal date required.');
+        return;
+      }
+      
+      const prospects = getProspects();
+      
+      if (editingIndex !== null) {
+        prospects[editingIndex] = { orgName, contact, renewalDate, crmLink, policyLink, premium, status };
+        editingIndex = null;
+      } else {
+        prospects.push({ orgName, contact, renewalDate, crmLink, policyLink, premium, status });
+      }
+      
+      saveProspects(prospects);
+      clearForm();
+      renderTable();
+    }
+
+    function editProspect(idx) {
+      const prospects = getProspects();
+      const prospect = prospects[idx];
+      
+      document.getElementById('orgName').value = prospect.orgName;
+      document.getElementById('contact').value = prospect.contact || '';
+      document.getElementById('renewalDate').value = prospect.renewalDate;
+      document.getElementById('crmLink').value = prospect.crmLink || '';
+      document.getElementById('policyLink').value = prospect.policyLink || '';
+      document.getElementById('premium').value = prospect.premium || '';
+      document.getElementById('status').value = prospect.status;
+      
+      editingIndex = idx;
+      
+      document.getElementById('submitBtn').textContent = 'Update';
+      document.getElementById('submitBtn').style.background = '#16a34a';
+      document.getElementById('cancelBtn').style.display = 'block';
+      
+      document.getElementById('orgName').focus();
+    }
+
+    function cancelEdit() {
+      editingIndex = null;
+      clearForm();
+    }
+
+    function clearForm() {
+      document.getElementById('orgName').value = '';
+      document.getElementById('contact').value = '';
+      document.getElementById('renewalDate').value = '';
+      document.getElementById('crmLink').value = '';
+      document.getElementById('policyLink').value = '';
+      document.getElementById('premium').value = '';
+      document.getElementById('status').value = 'Prospect';
+      
+      document.getElementById('submitBtn').textContent = 'Add';
+      document.getElementById('submitBtn').style.background = '#2563eb';
+      document.getElementById('cancelBtn').style.display = 'none';
+    }
+    
+    function deleteProspect(idx) {
+      if (confirm('Delete this prospect?')) {
+        const prospects = getProspects();
+        prospects.splice(idx, 1);
+        saveProspects(prospects);
+        renderTable();
+      }
+    }
+
+    function openPolicyLink(url) {
+      window.location.href = url;
+    }
+
+    function chooseFromDropbox() {
+      if (typeof Dropbox === 'undefined') {
+        alert('Dropbox is not loaded. Please refresh the page.');
+        return;
+      }
+
+      Dropbox.choose({
+        success: function(files) {
+          if (files && files.length > 0) {
+            const file = files[0];
+            document.getElementById('policyLink').value = file.link;
+          }
+        },
+        cancel: function() {},
+        linkType: 'direct',
+        multiselect: false,
+        extensions: ['.pdf', '.doc', '.docx', '.xls', '.xlsx'],
+      });
+    }
+    
+    document.getElementById('renewalDate').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') addProspect();
+    });
+    
+    renderTable();
+  </script>
+</body>
+</html>
